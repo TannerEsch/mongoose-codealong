@@ -6,7 +6,7 @@ const postSchema = new mongoose.Schema({
     // embbeded
     // comments: [commentSchema],
     // reference
-    refComments: [{
+    comments: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Comment'
     }]

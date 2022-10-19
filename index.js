@@ -121,193 +121,200 @@ app.delete('/users/:email', (req, res) => {
 
 //-----------------------------POSTMAN STUFF FOR COMMENTS --------------------------------------
 
-// //load all comments
-// app.get('/comments', (req, res) => {
-//     Comment.find({})
-//     .then(comments => {
-//         console.log('All comments', comments);
-//         res.json({ comments: comments });
-//     })
-//     .catch(error => { 
-//         console.log('error', error);
-//         res.json({ message: "Error ocurred, please try again" });
-//     });
-// });
+//load all comments
+app.get('/comments', (req, res) => {
+    Comment.find({})
+    .then(comments => {
+        console.log('All comments', comments);
+        res.json({ comments: comments });
+    })
+    .catch(error => { 
+        console.log('error', error);
+        res.json({ message: "Error ocurred, please try again" });
+    });
+});
 
-// //load comments with a given email
-// app.get('/comments/:email', (req, res) => {
-//     console.log('find comments by', req.params.email)
-//     Comment.findOne({
-//         email: req.params.email
-//     })
-//     .then(Comment => {
-//         console.log('Here is the comment', Comment.name);
-//         res.json({ Comment: Comment });
-//     })
-//     .catch(error => { 
-//         console.log('error', error);
-//         res.json({ message: "Error ocurred, please try again" });
-//     });
-// });
+//load comments with a given id
+app.get('/posts/:id/comments', (req, res) => {
+    console.log('find comments by', req.params.id)
+    Comment.findById(req.params.id)
+    .then(Comment => {
+        console.log('Here is the comment', Comment);
+        res.json({ Comment: Comment });
+    })
+    .catch(error => { 
+        console.log('error', error);
+        res.json({ message: "Error ocurred, please try again" });
+    });
+});
 
-// //post a comment
-// app.post('/comments', (req, res) => {
-//     Comment.create({
-//         name: req.body.name,
-//         email: req.body.email,
-//         meta: {
-//             age: req.body.age,
-//             website: req.body.website
-//         }
-//     })
-//     .then(Comment => {
-//         console.log('New Comment =>>', Comment);
-//         res.json({ Comment: Comment });
-//     })
-//     .catch(error => { 
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" })
-//     });
-// });
+//post a comment
+app.post('/posts/:id/comments', (req, res) => {
+    Post.findById(req.params.id)
+    .then(post => {
+        console.log('Heyyy, this is the post', post);
+        // create and pust comment inside of post
+        Comment.create({
+            header: req.body.header,
+            content: req.body.content
+        })
+        .then(createdComment => {
+            post.comments.push(createdComment);
+            // save the post
+            post.save();
+            res.redirect(`/posts/${req.params.id}`);
+        })
+        .catch(error => { 
+            console.log('error', error);
+            res.json({ message: "Error ocurred, please try again 1" });
+        });
+    })
+    .catch(error => { 
+        console.log('error', error);
+        res.json({ message: "Error ocurred, please try again 2" });
+    });
+});
 
-// //update a user
-// app.put('/comments/:email', (req, res) => {
-//     console.log('route is being on PUT')
-//     Comment.findOne({ email: req.params.email })
-//     .then(foundComment => {
-//         console.log('Comment found', foundComment);
-//         Comment.findOneAndUpdate({ email: req.params.email }, 
-//         { 
-//             name: req.body.name ? req.body.name : foundComment.name,
-//             email: req.body.email ? req.body.email : foundComment.email,
-//             meta: {
-//                 age: req.body.age ? req.body.age : foundComment.age,
-//                 website: req.body.website ? req.body.website : foundComment.website
-//             }
-//         })
-//         .then(Comment => {
-//             console.log('Comment was updated', Comment);
-//             res.json({ Comment: Comment })
-//         })
-//         .catch(error => {
-//             console.log('error', error) 
-//             res.json({ message: "Error ocurred, please try again" })
-//         })
-//     })
-//     .catch(error => {
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" })
-//     })
-// });
+//update a comment
+app.put('/comments/:id', (req, res) => {
+    console.log('route is being on PUT')
+    Comment.findById({ id: req.params.id })
+    .then(foundComment => {
+        console.log('Comment found', foundComment);
+        Comment.findByIdAndUpdate({ id: req.params.id }, 
+        { 
+            header: req.body.header ? req.body.header : foundComment.header,
+            content: req.body.content ? req.body.content : foundComment.content,
+        })
+        .then(Comment => {
+            console.log('Comment was updated', Comment);
+            res.redirect( `/comments/${req.params.id}` )
+        })
+        .catch(error => {
+            console.log('error', error) 
+            res.json({ message: "Error ocurred, please try again" })
+        })
+    })
+    .catch(error => {
+        console.log('error', error) 
+        res.json({ message: "Error ocurred, please try again" })
+    })
+});
 
-// //delete a user
-// app.delete('/Comment/:email', (req, res) => {
-//     Comment.findOneAndRemove({ email: req.params.email })
-//     .then(response => {
-//         console.log('This was delete', response);
-//         res.json({ message: `${req.params.email} was deleted`});
-//     })
-//     .catch(error => {
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" });
-//     })
-// });
+//delete a comment
+app.delete('/Comment/:id', (req, res) => {
+    Comment.findByIdAndRemove(req.params.id)
+    .then(response => {
+        console.log('This was delete', response);
+        res.json({ message: `${req.params.email} was deleted`});
+    })
+    .catch(error => {
+        console.log('error', error) 
+        res.json({ message: "Error ocurred, please try again" });
+    })
+});
 // //----------------------------- END POSTMAN STUFF FOR COMMENTS--------------------------------------
 
 // //-----------------------------POSTMAN STUFF FOR POSTS --------------------------------------
 
  
 // //load all posts
-// app.get('/posts', (req, res) => {
-//     Post.find({})
-//     .then(posts => {
-//         console.log('All posts', posts);
-//         res.json({ posts: posts });
-//     })
-//     .catch(error => { 
-//         console.log('error', error);
-//         res.json({ message: "Error ocurred, please try again" });
-//     });
-// });
+app.get('/posts', (req, res) => {
+    Post.find({})
+    .then(posts => {
+        console.log('All posts', posts);
+        res.json({ posts: posts });
+    })
+    .catch(error => { 
+        console.log('error', error);
+        res.json({ message: "Error ocurred, please try again" });
+    });
+});
 
-// //load users with a given email
-// app.get('/posts/:email', (req, res) => {
-//     console.log('find Post by', req.params.email)
+//load posts with a given title
+// app.get('/posts/:title', (req, res) => {
+//     console.log('find Post by', req.params.title)
 //     Post.findOne({
-//         email: req.params.email
+//         title: req.params.title
 //     })
 //     .then(Post => {
-//         console.log('Here is the Post', Post.name);
-//         res.json({ user: Post });
-//     })
-//     .catch(error => { 
-//         console.log('error', error);
-//         res.json({ message: "Error ocurred, please try again" });
-//     });
-// });
-
-// //post a user
-// app.post('/posts', (req, res) => {
-//     User.create({
-//         name: req.body.name,
-//         email: req.body.email,
-//         meta: {
-//             age: req.body.age,
-//             website: req.body.website
-//         }
-//     })
-//     .then(Post => {
-//         console.log('New Post =>>', Post);
+//         console.log('Here is the Post', Post);
 //         res.json({ Post: Post });
 //     })
 //     .catch(error => { 
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" })
+//         console.log('error', error);
+//         res.json({ message: "Error ocurred, please try again" });
 //     });
 // });
 
-// //update a user
-// app.put('/posts/:email', (req, res) => {
-//     console.log('route is being on PUT')
-//     Post.findOne({ email: req.params.email })
-//     .then(foundPost => {
-//         console.log('Post found', foundPost);
-//         Post.findOneAndUpdate({ email: req.params.email }, 
-//         { 
-//             name: req.body.name ? req.body.name : foundPost.name,
-//             email: req.body.email ? req.body.email : foundPost.email,
-//             meta: {
-//                 age: req.body.age ? req.body.age : foundPost.age,
-//                 website: req.body.website ? req.body.website : foundPost.website
-//             }
-//         })
-//         .then(Post => {
-//             console.log('Post was updated', Post);
-//             res.json({ Post: uPostser })
-//         })
-//         .catch(error => {
-//             console.log('error', error) 
-//             res.json({ message: "Error ocurred, please try again" })
-//         })
-//     })
-//     .catch(error => {
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" })
-//     })
-// });
+//can only have one of these routes above/below
 
-// //delete a user
-// app.delete('/posts/:email', (req, res) => {
-//     Post.findOneAndRemove({ email: req.params.email })
-//     .then(response => {
-//         console.log('This was delete', response);
-//         res.json({ message: `${req.params.email} was deleted`});
-//     })
-//     .catch(error => {
-//         console.log('error', error) 
-//         res.json({ message: "Error ocurred, please try again" });
-//     })
-// });
+//load posts with a given id
+app.get('/posts/:id', (req,res) => {
+    Post.findById(req.params.id)
+    .then(post => {
+        console.log('This post', post);
+        res.json({ post: post });
+    })
+    .catch(error => { 
+        console.log('error >>>>>>', error) 
+    });
+});
+
+//post a post
+app.post('/posts', (req, res) => {
+    Post.create({
+        title: req.body.title,
+        body: req.body.body,
+    })
+    .then(Post => {
+        console.log('New Post =>>', Post);
+        res.json({ Post: Post });
+    })
+    .catch(error => { 
+        console.log('error', error) 
+        res.json({ message: "Error ocurred, please try again" })
+    });
+});
+
+//update a post
+app.put('/posts/:id', (req, res) => {
+    console.log('route is being on PUT')
+    Post.findOne({ id: req.params.id })
+    .then(foundPost => {
+        console.log('Post found', foundPost);
+        Post.findOneAndUpdate({ id: req.params.id }, 
+        { 
+            title: req.body.title ? req.body.title : foundPost.title,
+            body: req.body.body ? req.body.body : foundPost.body,
+        })
+        .then(Post => {
+            console.log('Post was updated', Post);
+            res.redirect( `/posts/${req.params.id}` )
+        })
+        .catch(error => {
+            console.log('error', error) 
+            res.json({ message: "Error ocurred, please try again" })
+        })
+    })
+    .catch(error => {
+        console.log('error', error) 
+        res.json({ message: "Error ocurred, please try again" })
+    })
+});
+
+//delete a post
+app.delete('/posts/:id', (req, res) => {
+    Post.findOneAndRemove(req.params.id)
+    .then(response => {
+        console.log('This was delete', response);
+        res.json({ message: `${req.params.id} was deleted`});
+    })
+    .catch(error => {
+        console.log('error', error) 
+        res.json({ message: "Error ocurred, please try again" });
+    })
+});
 //----------------------------- END POSTMAN STUFF FOR POSTS--------------------------------------
 
 // mongoose fetch statements
@@ -451,6 +458,6 @@ app.delete('/users/:email', (req, res) => {
 //     console.log(post);
 // });
 
-// app.listen(8000, () => {
-//     console.log('Running port 8000')
-// });
+app.listen(8000, () => {
+    console.log('Running port 8000')
+});
